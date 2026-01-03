@@ -6,7 +6,7 @@ on:
       - main
       - develop
     paths:
-      - 'Infrastructure/env/development/'
+      - 'Infrastructure/**'
       - '.github/workflows/terraform-apply.yml'
 
 permissions:
