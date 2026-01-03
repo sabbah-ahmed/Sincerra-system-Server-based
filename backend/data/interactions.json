@@ -1,0 +1,47 @@
+[
+  {
+    "id": "529c0aed-16d1-4442-bafa-8990deb85649",
+    "client_id": "60594a03-51b7-4348-b4d9-b54d7ef1fd43",
+    "type": "CLIENT_CREATED",
+    "description": "Client created in system",
+    "created_by": "system",
+    "created_at": "2025-12-24T14:57:00.541Z",
+    "metadata": {}
+  },
+  {
+    "id": "2a247aac-a4ca-4990-8b3b-70a17b93bb59",
+    "client_id": "60594a03-51b7-4348-b4d9-b54d7ef1fd43",
+    "type": "CLIENT_UPDATED",
+    "description": "Client information updated: name, phone, budget_range, email, property_interest, notes",
+    "created_by": "system",
+    "created_at": "2025-12-24T14:57:23.987Z",
+    "metadata": {}
+  },
+  {
+    "id": "a2316977-2236-4916-93bd-064757cea030",
+    "client_id": "60594a03-51b7-4348-b4d9-b54d7ef1fd43",
+    "type": "CLIENT_DELETED",
+    "description": "Client record deleted from system",
+    "created_by": "system",
+    "created_at": "2025-12-24T14:57:30.627Z",
+    "metadata": {}
+  },
+  {
+    "id": "d2432312-3a8b-42c8-b7a0-c6e8b9fd4a39",
+    "client_id": "74c0006d-2cec-4f7a-980e-2dea058311e2",
+    "type": "CLIENT_CREATED",
+    "description": "Client created in system",
+    "created_by": "system",
+    "created_at": "2025-12-24T15:04:43.382Z",
+    "metadata": {}
+  },
+  {
+    "id": "f30e5a3f-0811-4b66-a57f-2a6ed1e8695c",
+    "client_id": "1d56c842-cd49-444d-8ccc-f8e88085c9f4",
+    "type": "CLIENT_CREATED",
+    "description": "Client created in system",
+    "created_by": "system",
+    "created_at": "2025-12-24T15:05:54.692Z",
+    "metadata": {}
+  }
+]

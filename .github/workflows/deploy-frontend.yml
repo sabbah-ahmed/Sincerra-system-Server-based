@@ -1,0 +1,65 @@
+# name: Deploy Frontend to EC2
+
+# on:
+#   push:
+#     paths:
+#       - 'frontend/**'
+#       - '.github/workflows/deploy-frontend.yml'
+#     branches:
+#       - main
+#   workflow_dispatch:
+
+# jobs:
+#   deploy:
+#     name: Deploy Frontend
+#     runs-on: ubuntu-latest
+    
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v4
+
+#       - name: Setup Node.js
+#         uses: actions/setup-node@v4
+#         with:
+#           node-version: '18'
+
+#       - name: Install dependencies
+#         working-directory: frontend
+#         run: npm ci
+
+#       - name: Build React app
+#         working-directory: frontend
+#         env:
+#           REACT_APP_API_URL: ${{ secrets.BACKEND_API_URL }}
+#         run: npm run build
+
+#       - name: Configure AWS Credentials
+#         uses: aws-actions/configure-aws-credentials@v4
+#         with:
+#           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#           aws-region: us-east-1
+
+#       - name: Create deployment package
+#         working-directory: frontend
+#         run: |
+#           cd build
+#           zip -r ../../frontend-deployment.zip .
+
+#       - name: Upload to S3
+#         run: |
+#           aws s3 cp frontend-deployment.zip s3://${{ secrets.DEPLOYMENT_BUCKET }}/frontend/frontend-${GITHUB_SHA}.zip
+
+#       - name: Deploy to EC2 via SSM
+#         run: |
+#           aws ssm send-command \
+#             --document-name "AWS-RunShellScript" \
+#             --targets "Key=tag:Application,Values=sincerra-frontend" \
+#             --parameters 'commands=[
+#               "aws s3 cp s3://${{ secrets.DEPLOYMENT_BUCKET }}/frontend/frontend-${GITHUB_SHA}.zip /tmp/frontend.zip",
+#               "rm -rf /var/www/sincerra/*",
+#               "unzip -o /tmp/frontend.zip -d /var/www/sincerra",
+#               "nginx -s reload",
+#               "rm /tmp/frontend.zip"
+#             ]' \
+#             --comment "Deploy frontend version ${GITHUB_SHA}"

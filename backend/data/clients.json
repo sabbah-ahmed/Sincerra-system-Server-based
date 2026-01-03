@@ -1,0 +1,34 @@
+[
+  {
+    "id": "74c0006d-2cec-4f7a-980e-2dea058311e2",
+    "name": "ahmed sabbah",
+    "email": "aa1392002@gmail.com",
+    "phone": "+201022090788",
+    "property_interest": "VILLA",
+    "budget_range": "0-500000",
+    "source": "manual_entry",
+    "notes": "first user",
+    "status": "LEAD",
+    "created_at": "2025-12-24T15:04:43.381Z",
+    "updated_at": "2025-12-24T15:04:43.381Z",
+    "last_contact": null,
+    "next_contact": "2025-12-27T15:04:43.381Z",
+    "assigned_to": null
+  },
+  {
+    "id": "1d56c842-cd49-444d-8ccc-f8e88085c9f4",
+    "name": "ali ahmed",
+    "email": "ali@gmail.com",
+    "phone": "+201129378680",
+    "property_interest": "COMMERCIAL",
+    "budget_range": "500000-1000000",
+    "source": "website_form",
+    "notes": "Website inquiry: waiting for more details",
+    "status": "LEAD",
+    "created_at": "2025-12-24T15:05:54.692Z",
+    "updated_at": "2025-12-24T15:05:54.692Z",
+    "last_contact": null,
+    "next_contact": "2025-12-27T15:05:54.692Z",
+    "assigned_to": null
+  }
+]

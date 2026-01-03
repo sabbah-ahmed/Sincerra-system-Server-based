@@ -1,0 +1,151 @@
+name: Terraform plan
+
+on:
+  pull_request:
+    branches:
+      - main
+      - develop
+    paths:
+      - 'Infrastructure/env/development/'
+      - '.github/workflows/terraform-apply.yml'
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  terraform-plan:
+    runs-on: ubuntu-latest
+    
+    defaults:
+      run:
+        working-directory: Infrastructure/env/development/
+
+    steps:
+      # 1. Checkout the code
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # 2. Configure AWS Credentials
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      # 3. Setup Terraform CLI
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.6.6
+
+      # 4. Setup TFLint
+      - name: Setup TFLint
+        uses: terraform-linters/setup-tflint@v4
+        with:
+          tflint_version: v0.44.1
+
+      # 5. Terraform Formatting Check
+      - name: Terraform Format Check
+        id: fmt
+        run: terraform fmt -recursive -check
+        continue-on-error: true
+
+      # 6. Terraform Initialization
+      - name: Terraform Init
+        id: init
+        run: terraform init
+
+      # 7. Terraform Validation
+      - name: Terraform Validate
+        id: validate
+        run: terraform validate -no-color
+
+      # 8. TFLint Static Code Analysis
+      - name: TFLint
+        id: tflint
+        run: |
+          tflint --version
+          tflint --init
+          tflint --config=.tflint.hcl --chdir=./
+        continue-on-error: true
+
+      # 9. TFSec Security Scan
+      - name: TFSec Security Scan
+        id: tfsec
+        uses: aquasecurity/tfsec-action@v1.0.0
+        with:
+          working_directory: Infrastructure
+          additional_args: "--force-all-dirs --minimum-severity MEDIUM"
+        continue-on-error: true
+
+      # 10. Terrascan Security Scan
+      - name: Terrascan Security Scan
+        id: terrascan
+        uses: tenable/terrascan-action@main
+        with:
+          iac_type: 'terraform'
+          iac_dir: 'Infrastructure'
+          policy_type: 'aws'
+          only_warn: true
+          sarif_upload: false
+        continue-on-error: true
+
+      # 11. Terraform Plan
+      - name: Terraform Plan
+        id: plan
+        run: |
+          terraform plan -no-color -input=false -var-file=environment/dev.tfvars -out=tfplan
+        
+
+
+
+
+
+    # 12. Comment PR with Plan Results
+      - name: Comment PR with Plan Results
+        uses: actions/github-script@v7
+        if: github.event_name == 'pull_request'
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const output = `#### Terraform Plan Results 📋
+            
+            | Check | Status |
+            |-------|--------|
+            | 🖌 Format | \`${{ steps.fmt.outcome }}\` |
+            | ⚙️ Initialization | \`${{ steps.init.outcome }}\` |
+            | 🤖 Validation | \`${{ steps.validate.outcome }}\` |
+            | 📝 TFLint | \`${{ steps.tflint.outcome }}\` |
+            | 🔒 TFSec | \`${{ steps.tfsec.outcome }}\` |
+            | 🛡️ Terrascan | \`${{ steps.terrascan.outcome }}\` |
+            | 📖 Plan | \`${{ steps.plan.outcome }}\` |
+            
+            <details>
+            <summary>📄 Show Terraform Plan</summary>
+            
+            \`\`\`terraform
+            ${{ steps.plan.outputs.stdout }}
+            \`\`\`
+            
+            </details>
+            
+            ---
+            *Pushed by: @${{ github.actor }} | Workflow: \`${{ github.workflow }}\`*`;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
+            });
+
+
+
+    #   # 13. Fail if Critical Issues Found
+    #   - name: Check for Critical Failures
+    #     if: steps.init.outcome == 'failure' || steps.validate.outcome == 'failure' || steps.plan.outcome == 'failure'
+    #     run: |
+    #       echo "::error::Critical checks failed. Please review the errors above."
+    #       exit 1
