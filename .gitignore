@@ -58,3 +58,6 @@ coverage/
 *.bak
 *.tmp
 .cache/
+
+# Bootstrap folder (not ready yet)
+Infrastructure/bootstrap/
