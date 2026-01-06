@@ -56,3 +56,36 @@ module "frontend_asg" {
   instance_type      = var.instance_type
   key_name           = var.key_name
 }
+
+# ====================================================================
+# Backend Application Load Balancer - Creates Internal ALB in Private Subnets
+# ====================================================================
+
+module "backend_alb" {
+  source = "../../modules/backend_ALB"
+
+  environment        = var.environment
+  vpc_id             = module.network.vpc_id
+  vpc_name           = var.vpc_name
+  private_subnet_ids = module.network.private_subnet_ids
+  alb_sg_id          = module.security_groups.backend_alb_sg_id
+}
+
+# ====================================================================
+# Backend Auto Scaling Group - Creates ASG in Private Subnets
+# ====================================================================
+
+module "backend_asg" {
+  source = "../../modules/backend_asg"
+
+  environment        = var.environment
+  vpc_id             = module.network.vpc_id
+  vpc_name           = var.vpc_name
+  vpc_cidr           = var.vpc_cidr
+  private_subnet_ids = module.network.private_subnet_ids
+  backend_sg_id      = module.security_groups.backend_sg_id
+  target_group_arn   = module.backend_alb.target_group_arn
+  image_id           = var.image_id
+  instance_type      = var.instance_type
+  key_name           = var.key_name
+}

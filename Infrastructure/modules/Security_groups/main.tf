@@ -66,3 +66,76 @@ resource "aws_security_group_rule" "frontend_egress_all" {
   cidr_blocks       = ["0.0.0.0/0"]
   security_group_id = aws_security_group.frontend_sg.id
 }
+
+
+
+
+
+####################################### Backend ALB Security Group #######################################
+resource "aws_security_group" "backend_alb_sg" {
+  name   = "${var.vpc_name}-backend-alb-sg"
+  vpc_id = var.vpc_id
+
+  tags = {
+    Name        = "${var.vpc_name}-backend-alb-sg"
+    environment = var.environment
+    terraform   = "true"
+  }
+}
+
+# Backend ALB Ingress - Allow HTTP from Frontend Security Group
+resource "aws_security_group_rule" "backend_alb_ingress_from_frontend" {
+  type                     = "ingress"
+  description              = "HTTP from Frontend instances"
+  from_port                = 80
+  to_port                  = 80
+  protocol                 = "tcp"
+  source_security_group_id = aws_security_group.frontend_sg.id
+  security_group_id        = aws_security_group.backend_alb_sg.id
+}
+
+# Backend ALB Egress - To Backend instances on port 3001
+resource "aws_security_group_rule" "backend_alb_egress_to_backend" {
+  type                     = "egress"
+  description              = "To Backend instances"
+  from_port                = 3001
+  to_port                  = 3001
+  protocol                 = "tcp"
+  source_security_group_id = aws_security_group.backend_sg.id
+  security_group_id        = aws_security_group.backend_alb_sg.id
+}
+
+
+####################################### Backend Security Group #######################################
+resource "aws_security_group" "backend_sg" {
+  name   = "${var.vpc_name}-backend-sg"
+  vpc_id = var.vpc_id
+
+  tags = {
+    Name        = "${var.vpc_name}-backend-sg"
+    environment = var.environment
+    terraform   = "true"
+  }
+}
+
+# Backend Ingress - Allow traffic from Backend ALB on port 3001
+resource "aws_security_group_rule" "backend_ingress_from_alb" {
+  type                     = "ingress"
+  description              = "HTTP from Backend ALB"
+  from_port                = 3001
+  to_port                  = 3001
+  protocol                 = "tcp"
+  source_security_group_id = aws_security_group.backend_alb_sg.id
+  security_group_id        = aws_security_group.backend_sg.id
+}
+
+# Backend Egress - Allow all outbound (for DynamoDB, NAT gateway, updates, etc.)
+resource "aws_security_group_rule" "backend_egress_all" {
+  type              = "egress"
+  description       = "Allow all outbound traffic"
+  from_port         = 0
+  to_port           = 0
+  protocol          = "-1"
+  cidr_blocks       = ["0.0.0.0/0"]
+  security_group_id = aws_security_group.backend_sg.id
+}

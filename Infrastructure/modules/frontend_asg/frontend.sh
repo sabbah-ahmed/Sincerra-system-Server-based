@@ -33,6 +33,25 @@ git clone https://github.com/sabbah-ahmed/Sincerra-system-serverless-.git /tmp/s
 # Navigate to frontend folder
 cd /tmp/sincerra/frontend
 
+# Get backend ALB DNS for API endpoint
+echo "Fetching Backend ALB DNS..."
+BACKEND_ALB_DNS=$(aws elbv2 describe-load-balancers \
+    --names "backend-alb" \
+    --region us-east-1 \
+    --query "LoadBalancers[0].DNSName" \
+    --output text)
+
+if [ -n "$BACKEND_ALB_DNS" ]; then
+    echo "Backend ALB DNS: $BACKEND_ALB_DNS"
+    echo "Updating API endpoint in React app..."
+    # Replace the hardcoded API Gateway URL with backend ALB DNS
+    find ./src -type f -name "*.js" -exec sed -i \
+      "s|https://uzt1t3u3ff.execute-api.us-east-1.amazonaws.com/api|http://${BACKEND_ALB_DNS}|g" {} +
+    echo "✅ API endpoint updated successfully"
+else
+    echo "⚠️  Warning: Could not retrieve Backend ALB DNS. API calls may fail."
+fi
+
 # Install dependencies
 echo "Installing dependencies..."
 npm install
