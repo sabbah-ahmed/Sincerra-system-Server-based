@@ -9,6 +9,7 @@ terraform {
 
 # Configure the AWS Provider
 provider "aws" {
-  region  = var.aws_region
-  profile = "admin"
+  region = var.aws_region
+  # profile is used for local development only
+  # In GitHub Actions, AWS credentials are provided via environment variables
 }
