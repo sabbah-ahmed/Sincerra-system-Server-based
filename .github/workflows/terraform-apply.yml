@@ -6,7 +6,7 @@ on:
       - main
       - develop
     paths:
-      - 'Infrastructure/env/development/'
+      - 'Infrastructure/**'
       - '.github/workflows/terraform-apply.yml'
 
 permissions:
@@ -96,7 +96,7 @@ jobs:
       - name: Terraform Plan
         id: plan
         run: |
-          terraform plan -no-color -input=false -var-file=environment/dev.tfvars -out=tfplan
+          terraform plan -var-file="terraform.tfvars" -compact-warnings -no-color -input=false -out=tfplan
         
 
 

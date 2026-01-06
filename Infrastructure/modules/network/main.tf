@@ -1,7 +1,6 @@
 ####################### vpc ##########################
-resource "vpc" "main" {
-    name = var.vpc_name
-    cidr = var.vpc_cidr
+resource "aws_vpc" "main" {
+    cidr_block = var.vpc_cidr
 
     tags = {
         Name = var.vpc_name
@@ -11,10 +10,10 @@ resource "vpc" "main" {
 }
 
 ####################### public subnets ##########################
-resource "subnet" "public" {
+resource "aws_subnet" "public" {
     for_each = var.public_subnets
 
-    vpc_id           = vpc.main.id
+    vpc_id           = aws_vpc.main.id
     cidr_block       = each.value
     availability_zone = each.key
 
@@ -25,8 +24,8 @@ resource "subnet" "public" {
     }
 }
 ####################### internet gateway ##########################
-resource "internet_gateway" "igw" {
-    vpc_id = vpc.main.id
+resource "aws_internet_gateway" "igw" {
+    vpc_id = aws_vpc.main.id
 
     tags = {
         Name = "${var.vpc_name}-igw"
@@ -38,8 +37,8 @@ resource "internet_gateway" "igw" {
 
 
 ####################### public route table ##########################
-resource "route_table" "public" {
-    vpc_id = vpc.main.id
+resource "aws_route_table" "public" {
+    vpc_id = aws_vpc.main.id
 
     tags = {
         Name = "${var.vpc_name}-public-rt"
@@ -50,29 +49,29 @@ resource "route_table" "public" {
 
 
 ####################### public route table associations ##########################
-resource "route_table_association" "public_assoc" {
-    for_each = subnet.public
+resource "aws_route_table_association" "public_assoc" {
+    for_each = aws_subnet.public
 
     subnet_id = each.value.id
-    route_table_id = route_table.public.id
+    route_table_id = aws_route_table.public.id
 
 }
 
 ####################### public route ##########################
-resource "route" "public_internet_access" {
-    route_table_id = route_table.public.id
+resource "aws_route" "public_internet_access" {
+    route_table_id = aws_route_table.public.id
     destination_cidr_block = "0.0.0.0/0"
-    gateway_id = internet_gateway.igw.id
+    gateway_id = aws_internet_gateway.igw.id
 }
 
 ##################################################################################################################
 
 
 ####################### private subnets ##########################
-resource "subnet" "private" {
+resource "aws_subnet" "private" {
     for_each = var.private_subnets
 
-    vpc_id = vpc.main.id
+    vpc_id = aws_vpc.main.id
     cidr_block = each.value
     availability_zone = each.key
 
@@ -84,8 +83,8 @@ resource "subnet" "private" {
 }
 
 ######################## private route table ##########################
-resource "route_table" "private" {
-    vpc_id = vpc.main.id
+resource "aws_route_table" "private" {
+    vpc_id = aws_vpc.main.id
 
     tags = {
         Name = "${var.vpc_name}-private-rt"
@@ -96,8 +95,8 @@ resource "route_table" "private" {
 
 
 ######################## eip for nat gateway ##########################
-resource "eip" "nat_eip" {
-    vpc = true
+resource "aws_eip" "nat_eip" {
+    domain = "vpc"
 
     tags = {
         Name = "${var.vpc_name}-nat-eip"
@@ -107,9 +106,9 @@ resource "eip" "nat_eip" {
 }
 
 ####################### nate gateway ##########################
-resource "nat_gateway" "nat" {
-    allocation_id = eip.nat_eip.id
-    subnet_id = subnet.public["us-east-1a"].id
+resource "aws_nat_gateway" "nat" {
+    allocation_id = aws_eip.nat_eip.id
+    subnet_id = aws_subnet.public["us-east-1a"].id
 
     tags = {
         Name = "${var.vpc_name}-nat-gateway"
@@ -121,19 +120,19 @@ resource "nat_gateway" "nat" {
 
 
 ####################### private route table associations ##########################
-resource "route_table_association" "private_assoc" {
-    for_each = subnet.private
+resource "aws_route_table_association" "private_assoc" {
+    for_each = aws_subnet.private
 
     subnet_id = each.value.id
-    route_table_id = route_table.private.id
+    route_table_id = aws_route_table.private.id
 
 }
 
 ####################### private route ##########################
-resource "route" "private_internet_access" {
-    route_table_id = route_table.private.id
+resource "aws_route" "private_internet_access" {
+    route_table_id = aws_route_table.private.id
     destination_cidr_block = "0.0.0.0/0"
-    nat_gateway_id = nat_gateway.nat.id
+    nat_gateway_id = aws_nat_gateway.nat.id
 }
 
 

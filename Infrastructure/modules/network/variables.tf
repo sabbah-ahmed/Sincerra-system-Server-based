@@ -28,7 +28,7 @@ variable "public_subnets"{
 
 variable "private_subnets"{
     description = "list of private subnets"
-    type = map(strings)
+    type = map(string)
     default = {
       "us-east-1a" = "10.0.100.0/24"
       "us-east-1b" = "10.0.200.0/24"

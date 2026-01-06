@@ -2,8 +2,6 @@
 **/.terraform/*
 *.tfstate
 *.tfstate.*
-*.tfvars
-!terraform.tfvars.example
 crash.log
 override.tf
 override.tf.json
@@ -58,3 +56,6 @@ coverage/
 *.bak
 *.tmp
 .cache/
+
+# Bootstrap folder (not ready yet)
+Infrastructure/bootstrap/
